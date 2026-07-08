@@ -1,0 +1,24 @@
+:root{--brand:#7a1f2b;--ink:#1a1a1a;--muted:#666;--bg:#faf7f2;--ok:#1c7c3c}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+.wrap{max-width:560px;margin:0 auto;padding:24px}
+h1{color:var(--brand);font-size:1.5rem;margin:.2em 0}
+h2{font-size:1.1rem;margin:1.2em 0 .4em}
+label{display:block;font-weight:600;margin:.7em 0 .2em}
+input[type=text],input[type=email],input[type=number]{width:100%;padding:12px;font-size:1.05rem;border:1px solid #ccc;border-radius:10px}
+button{background:var(--brand);color:#fff;border:0;border-radius:10px;padding:14px 20px;font-size:1.05rem;font-weight:600;cursor:pointer;width:100%}
+button.secondary{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+a{color:var(--brand)}
+.card{background:#fff;border:1px solid #eee;border-radius:14px;padding:20px;margin:16px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.amount{font-size:2rem;font-weight:700;color:var(--brand)}
+.muted{color:var(--muted);font-size:.9rem}
+.check{display:flex;gap:10px;align-items:flex-start;margin:1em 0}
+.check input{margin-top:4px;width:22px;height:22px;flex:0 0 auto}
+.ok{color:var(--ok);font-weight:700}
+.qr{text-align:center}.qr svg{width:min(78vw,320px);height:auto}
+.err{background:#fde8e8;color:#8a1c1c;padding:10px 14px;border-radius:10px;margin:10px 0}
+.banner{background:#eef6ef;border:1px solid #cfe8d4;padding:12px 14px;border-radius:10px;margin:12px 0}
+.demo{background:#fff6e5;border:1px solid #f0d9a0;padding:10px 14px;border-radius:10px;margin:12px 0;font-size:.85rem}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid #eee}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}

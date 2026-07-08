@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Gift Aid your donation</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <h1>Gift Aid your donation</h1>
+  <div class="card">
+    <p class="muted" id="to"></p>
+    <div class="amount" id="amount">£0.00</div>
+    <p class="muted" id="uplift"></p>
+  </div>
+
+  <div id="welcome"></div>
+
+  <form id="f" class="card" autocomplete="on">
+    <div class="banner" id="scope"></div>
+    <div class="row2">
+      <div><label for="title">Title</label>
+        <input id="title" name="title" type="text" autocomplete="honorific-prefix" placeholder="Mr / Mrs / Rev"></div>
+      <div><label for="firstName">First name</label>
+        <input id="firstName" name="firstName" type="text" autocomplete="given-name" required></div>
+    </div>
+    <label for="lastName">Last name</label>
+    <input id="lastName" name="lastName" type="text" autocomplete="family-name" required>
+    <label for="houseNameOrNumber">House name or number</label>
+    <input id="houseNameOrNumber" name="houseNameOrNumber" type="text" autocomplete="address-line1" required>
+    <label for="addressLine">Rest of address (optional)</label>
+    <input id="addressLine" name="addressLine" type="text" autocomplete="address-line2">
+    <label for="postcode">Postcode</label>
+    <input id="postcode" name="postcode" type="text" autocomplete="postal-code" autocapitalize="characters" required>
+    <label for="email">Email for a receipt (optional)</label>
+    <input id="email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com">
+    <div class="check">
+      <input id="tax" name="taxpayerConfirmed" type="checkbox" required>
+      <label for="tax" style="font-weight:400;margin:0" id="taxLabel"></label>
+    </div>
+    <button type="submit">Confirm my Gift Aid declaration</button>
+    <p class="muted" style="margin-top:14px" id="footer"></p>
+  </form>
+
+  <div id="done"></div>
+</div>
+
+<script type="module">
+import { CHARITY_NAME, GIFT_AID_RATE, TAXPAYER_STATEMENT, DECLARATION_FOOTER,
+         pounds, normalisePostcode, saveDeclaration, PROFILE_KEY } from "./shared.js";
+
+const q = new URLSearchParams(location.search);
+const amountPence = Math.max(0, Math.round(Number(q.get("a")) || 0));
+const txnId = q.get("id") || "demo";
+const amountText = pounds(amountPence);
+
+document.getElementById("to").textContent = "Your donation to " + CHARITY_NAME;
+document.getElementById("amount").textContent = amountText;
+document.getElementById("uplift").innerHTML =
+  "Gift Aid adds <strong>" + pounds(Math.round(amountPence * GIFT_AID_RATE)) + "</strong> at no cost to you.";
+document.getElementById("scope").textContent =
+  "I want to Gift Aid my donation of " + amountText + " to " + CHARITY_NAME + ".";
+document.getElementById("taxLabel").textContent = TAXPAYER_STATEMENT;
+document.getElementById("footer").textContent = DECLARATION_FOOTER;
+
+const fields = ["title","firstName","lastName","houseNameOrNumber","addressLine","postcode","email"];
+const welcome = document.getElementById("welcome");
+const f = document.getElementById("f");
+
+// Returning-donor prefill from this device only.
+try {
+  const p = JSON.parse(localStorage.getItem(PROFILE_KEY) || "null");
+  if (p && p.firstName) {
+    fields.forEach(k => { if (p[k] != null) document.getElementById(k).value = p[k]; });
+    welcome.innerHTML = '<div class="banner">Welcome back, ' + p.firstName +
+      ". We've filled in your details — just confirm below. " +
+      '<a href="#" id="notme">Not you?</a></div>';
+    document.getElementById("notme").onclick = (e) => {
+      e.preventDefault(); localStorage.removeItem(PROFILE_KEY); location.reload();
+    };
+  }
+} catch (e) {}
+
+f.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const v = {};
+  fields.forEach(k => v[k] = document.getElementById(k).value.trim());
+  v.postcode = normalisePostcode(v.postcode);
+  if (!document.getElementById("tax").checked) { alert("Please confirm the UK taxpayer declaration."); return; }
+  if (!/^[A-Z0-9]{2,4}\s[A-Z0-9]{3}$/.test(v.postcode)) { alert("Please enter a valid UK postcode."); return; }
+
+  saveDeclaration({
+    id: txnId, amountPence, ...v,
+    taxpayerConfirmed: true, consentAt: Date.now(),
+  });
+  // remember for next time on this device
+  const profile = {}; fields.forEach(k => profile[k] = v[k]);
+  profile.savedAt = Date.now();
+  try { localStorage.setItem(PROFILE_KEY, JSON.stringify(profile)); } catch (e) {}
+
+  f.style.display = "none"; welcome.innerHTML = "";
+  document.getElementById("done").innerHTML =
+    '<div class="card"><p class="ok">✓ Thank you, ' + v.firstName + "!</p>" +
+    "<p>Your Gift Aid declaration for " + amountText + " has been recorded" +
+    (v.email ? " and a receipt would be sent to " + v.email : "") + ".</p>" +
+    '<a href="results.html"><button>See results</button></a></div>';
+});
+</script>
+</body>
+</html>

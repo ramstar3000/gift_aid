@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Gift Aid station — scan to donate</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <h1 id="charity">Gift Aid station</h1>
+  <p class="muted">Scan to donate &amp; Gift Aid</p>
+
+  <div class="demo">Demo (GitHub Pages, static). Amounts and results are stored on
+    this device only. The production version uses a secure server so donors can't
+    change the amount and results are shared live.</div>
+
+  <div class="card">
+    <label for="amt">Donation amount (£)</label>
+    <input id="amt" type="number" inputmode="decimal" min="1" step="0.01" value="11.00">
+    <p class="muted">Enter the amount charged on the SumUp machine, then tap below.</p>
+    <button id="go">Create Gift Aid QR</button>
+  </div>
+
+  <div id="out"></div>
+  <div class="card"><a href="results.html"><button class="secondary">View results</button></a></div>
+</div>
+
+<script type="module">
+import { toSVG } from "./qr.js";
+import { CHARITY_NAME, pounds, siteBase } from "./shared.js";
+
+document.getElementById("charity").textContent = CHARITY_NAME;
+const out = document.getElementById("out");
+
+function makeQR() {
+  const p = parseFloat(document.getElementById("amt").value);
+  if (!(p > 0)) { out.innerHTML = '<div class="err">Enter a valid amount.</div>'; return; }
+  const pence = Math.round(p * 100);
+  const id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
+  const donorUrl = siteBase() + "donor.html?a=" + pence + "&id=" + id;
+  out.innerHTML =
+    '<div class="card qr"><h2>Scan to Gift Aid ' + pounds(pence) + '</h2>' +
+    toSVG(donorUrl, { scale: 6 }) +
+    '<p class="muted">Point your phone camera at the code — it opens the form on your phone.</p>' +
+    '<p class="muted">Or open: <a href="' + donorUrl + '">this link</a></p></div>';
+}
+
+document.getElementById("go").onclick = makeQR;
+makeQR(); // show a QR immediately
+</script>
+</body>
+</html>

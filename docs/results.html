@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Results — Gift Aid</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <h1 id="charity">Results</h1>
+  <p class="muted" id="count"></p>
+
+  <div class="demo">Static demo: these results are the declarations made on
+    <strong>this device</strong>. The production server shares results live across
+    the iPad and every donor's phone.</div>
+
+  <div class="card">
+    <p>Total donations: <span class="amount" id="total">£0.00</span><br>
+       Gift Aid to reclaim from HMRC: <strong id="ga">£0.00</strong></p>
+    <button id="csv">Download CSV for HMRC</button>
+  </div>
+
+  <div class="card"><table>
+    <thead><tr><th>Donor</th><th>Amount</th><th>Gift Aid</th><th>Email</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+
+  <div class="card"><a href="index.html"><button class="secondary">Back to scan page</button></a></div>
+</div>
+
+<script type="module">
+import { CHARITY_NAME, GIFT_AID_RATE, pounds, loadDeclarations } from "./shared.js";
+
+document.getElementById("charity").textContent = CHARITY_NAME;
+const decls = loadDeclarations();
+document.getElementById("count").textContent =
+  decls.length + " Gift Aid declaration(s) tracked";
+
+const total = decls.reduce((s, d) => s + d.amountPence, 0);
+document.getElementById("total").textContent = pounds(total);
+document.getElementById("ga").textContent = pounds(Math.round(total * GIFT_AID_RATE));
+
+document.getElementById("rows").innerHTML = decls.length
+  ? decls.slice().reverse().map(d =>
+      "<tr><td>" + (d.firstName || "") + " " + ((d.lastName || "").charAt(0)) + ".</td>" +
+      "<td>" + pounds(d.amountPence) + "</td>" +
+      "<td>" + pounds(Math.round(d.amountPence * GIFT_AID_RATE)) + "</td>" +
+      "<td>" + (d.email ? "✓" : "—") + "</td></tr>").join("")
+  : '<tr><td colspan="4" class="muted">No declarations yet — scan a QR to add one.</td></tr>';
+
+// HMRC Charities Online schedule columns.
+document.getElementById("csv").onclick = () => {
+  const ddmmyy = (ms) => { const d = new Date(ms); const p = n => String(n).padStart(2,"0");
+    return p(d.getDate()) + "/" + p(d.getMonth()+1) + "/" + String(d.getFullYear()).slice(-2); };
+  const cell = (v) => /[",\n]/.test(String(v ?? "")) ? '"' + String(v).replace(/"/g,'""') + '"' : String(v ?? "");
+  const head = ["Title","First name","Last name","House name or number","Postcode",
+    "Aggregated donations","Sponsored event","Donation date","Amount"];
+  const lines = [head.join(",")];
+  decls.forEach(d => lines.push([d.title,d.firstName,d.lastName,d.houseNameOrNumber,d.postcode,
+    "","No",ddmmyy(d.consentAt),(d.amountPence/100).toFixed(2)].map(cell).join(",")));
+  const blob = new Blob([lines.join("\r\n")], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "gift-aid-claim.csv"; a.click();
+  URL.revokeObjectURL(a.href);
+};
+</script>
+</body>
+</html>
