@@ -1,0 +1,13 @@
+{
+  "name": "gift-aid-poc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "QR-driven Gift Aid declaration POC for a UK temple. Zero runtime dependencies.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
