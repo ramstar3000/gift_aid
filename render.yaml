@@ -1,0 +1,20 @@
+# Render.com blueprint — drop-in deploy of the zero-dependency Node server.
+# In Render: New → Blueprint → connect this repo. Render injects PORT and gives
+# an HTTPS URL; the app derives QR links from the request host automatically.
+services:
+  - type: web
+    name: gift-aid-poc
+    runtime: node
+    plan: free
+    buildCommand: "echo no build step"
+    startCommand: node server.js
+    autoDeploy: true
+    envVars:
+      - key: CHARITY_NAME
+        value: Shri Example Temple Trust
+      - key: CHARITY_TYPE
+        value: trust
+      - key: ADMIN_SECRET
+        generateValue: true
+      - key: EMAIL_PROVIDER
+        value: none
